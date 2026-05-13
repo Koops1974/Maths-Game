@@ -489,14 +489,24 @@ let score = 0;
 let results = [];
 let answered = false;
 
-// ----- Local Storage -----
+// ----- Server Storage (shared across devices) -----
 function getAllData() {
-  const d = localStorage.getItem('mathsGameData');
-  return d ? JSON.parse(d) : { players: {}, lastPlayer: '' };
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'api.php', false);
+    xhr.send();
+    if (xhr.status === 200) return JSON.parse(xhr.responseText);
+  } catch (e) {}
+  return { players: {}, lastPlayer: '' };
 }
 
 function saveAllData(data) {
-  localStorage.setItem('mathsGameData', JSON.stringify(data));
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'api.php', false);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(data));
+  } catch (e) {}
 }
 
 function getPlayer(name) {
@@ -798,10 +808,14 @@ function selectOption(idx, q) {
   handleAnswer(correct, q);
 }
 
+function normalizeAnswer(val) {
+  return val.trim().replace(/\s*(km|cm|m|minutes|mins|min|hours|hrs|sec|seconds|cm²|m²|%|g|kg|ml|l)\s*$/i, '').trim();
+}
+
 function submitInput(q) {
   if (answered) return;
   const input = document.getElementById('inputAnswer');
-  const val = input.value.trim();
+  const val = normalizeAnswer(input.value);
   if (!val) return;
   answered = true;
   const correct = val === q.answer;
