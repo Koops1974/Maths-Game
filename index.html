@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coopers Math Games</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 620px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 2em;
+    color: #333;
+  }
+  .header .subtitle {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 5px;
+  }
+  .player-name-bar {
+    text-align: center;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1em;
+    margin-bottom: 15px;
+    padding: 6px;
+    background: #f0f2ff;
+    border-radius: 8px;
+  }
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding: 14px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    font-size: 0.9em;
+    flex-wrap: wrap;
+  }
+  .scoreboard span { color: #555; }
+  .scoreboard strong { color: #333; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .question-card {
+    background: #f8f9ff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+  }
+  .question-number {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .question-text {
+    font-size: 1.3em;
+    color: #333;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option-btn {
+    padding: 14px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: white;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    background: #f0f2ff;
+  }
+  .option-btn.correct {
+    border-color: #48bb78;
+    background: #e6fffa;
+    color: #276749;
+  }
+  .option-btn.wrong {
+    border-color: #fc8181;
+    background: #fff5f5;
+    color: #9b2c2c;
+  }
+  .option-btn:disabled { cursor: default; opacity: 0.8; }
+
+  .input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .input-area input {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1.2em;
+    width: 150px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-area input:focus { border-color: #667eea; }
+  .input-area input.correct { border-color: #48bb78; background: #e6fffa; }
+  .input-area input.wrong { border-color: #fc8181; background: #fff5f5; }
+
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: #667eea; color: white; }
+  .btn-primary:hover { background: #5a6fd6; transform: translateY(-1px); }
+  .btn-success { background: #48bb78; color: white; }
+  .btn-success:hover { background: #38a169; transform: translateY(-1px); }
+  .btn-danger { background: #fc8181; color: white; }
+  .btn-danger:hover { background: #e06c6c; transform: translateY(-1px); }
+  .btn-secondary { background: #a0aec0; color: white; }
+  .btn-secondary:hover { background: #8b9aaf; transform: translateY(-1px); }
+  .btn-gold { background: #ed8936; color: white; }
+  .btn-gold:hover { background: #dd6b20; transform: translateY(-1px); }
+
+  .name-input-area {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+  .name-input-area input {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1.1em;
+    width: 200px;
+    outline: none;
+    text-align: center;
+  }
+  .name-input-area input:focus { border-color: #667eea; }
+  .name-input-area .saved-names {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .name-input-area .saved-names button {
+    padding: 6px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+  }
+  .name-input-area .saved-names button:hover {
+    border-color: #667eea;
+    background: #f0f2ff;
+  }
+
+  .explanation {
+    margin-top: 15px;
+    padding: 15px;
+    background: #fffaf0;
+    border-left: 4px solid #ed8936;
+    border-radius: 8px;
+    font-size: 0.95em;
+    color: #744210;
+    line-height: 1.5;
+    display: none;
+  }
+  .explanation.show { display: block; }
+
+  .results-summary {
+    text-align: center;
+    padding: 20px;
+  }
+  .results-summary .big-score {
+    font-size: 4em;
+    font-weight: 800;
+    color: #667eea;
+  }
+  .results-summary .label { color: #666; font-size: 1.1em; }
+  .results-summary .message {
+    margin: 15px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+
+  .results-detail {
+    margin: 20px 0;
+  }
+  .result-item {
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+  }
+  .result-item.r-correct { background: #e6fffa; color: #276749; }
+  .result-item.r-wrong { background: #fff5f5; color: #9b2c2c; }
+  .result-item .q { font-weight: 600; }
+  .result-item .a { color: #666; margin-top: 3px; }
+
+  .start-screen { text-align: center; }
+  .start-screen .mascot { font-size: 3.5em; margin-bottom: 5px; }
+  .start-screen p { color: #555; margin: 8px 0 18px; line-height: 1.6; }
+
+  .leaderboard-table, .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 0.9em;
+  }
+  .leaderboard-table th, .leaderboard-table td,
+  .history-table th, .history-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+  }
+  .leaderboard-table th, .history-table th {
+    background: #f8f9ff;
+    color: #555;
+    font-weight: 600;
+  }
+  .leaderboard-table tr.current-player td {
+    background: #eef2ff;
+    font-weight: 600;
+  }
+  .rank-badge {
+    display: inline-block;
+    width: 24px; height: 24px;
+    line-height: 24px;
+    border-radius: 50%;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: white;
+  }
+  .rank-1 { background: #f6c445; }
+  .rank-2 { background: #a0aec0; }
+  .rank-3 { background: #ed8936; }
+
+  .topic-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .topic-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 10px; background: #f8f9ff;
+  }
+  .topic-label { width: 110px; font-weight: 600; color: #333; font-size: 0.9em; text-transform: capitalize; }
+  .topic-bar-bg {
+    flex: 1; height: 22px; background: #e2e8f0; border-radius: 11px; overflow: hidden; position: relative;
+  }
+  .topic-bar-fill {
+    height: 100%; border-radius: 11px; transition: width 0.4s;
+  }
+  .topic-bar-fill.green { background: #48bb78; }
+  .topic-bar-fill.yellow { background: #ecc94b; }
+  .topic-bar-fill.red { background: #fc8181; }
+  .topic-pct { width: 45px; text-align: right; font-weight: 700; font-size: 0.9em; color: #333; }
+  .topic-count { width: 60px; text-align: right; font-size: 0.85em; color: #666; }
+
+  .game-detail-toggle {
+    background: none; border: none; color: #667eea; cursor: pointer;
+    font-size: 0.85em; text-decoration: underline; padding: 2px 6px;
+  }
+  .game-detail-rows { display: none; margin-top: 4px; }
+  .game-detail-rows.show { display: table-row-group; }
+  .detail-q { font-size: 0.85em; color: #555; padding: 2px 10px; }
+  .detail-q.wrong { color: #9b2c2c; }
+  .detail-q.correct { color: #276749; }
+
+  .flex-center { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .mt-20 { margin-top: 20px; }
+  .mb-15 { margin-bottom: 15px; }
+
+  @media (max-width: 500px) {
+    .container { padding: 20px; }
+    .scoreboard { gap: 12px; font-size: 0.8em; padding: 10px; }
+    .question-text { font-size: 1.1em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <div class="header">
+    <h1> Cooper's Math Games</h1>
+    <div class="subtitle">Can you beat your high score?</div>
+  </div>
+
+  <div class="scoreboard" id="scoreboard">
+    <span id="sbPlayer" style="display:none;">Player: <strong id="currentPlayerDisplay"></strong></span>
+    <span>Correct: <strong id="totalCorrect">0</strong></span>
+    <span>Games: <strong id="totalGames">0</strong></span>
+    <span>Best: <strong id="bestScore">0</strong>/5</span>
+  </div>
+
+  <!-- Start Screen -->
+  <div class="screen active" id="startScreen">
+    <div class="start-screen">
+      <div class="mascot"></div>
+      <p>5 questions each round — multiple choice and fill-in.<br>Wrong answers show an explanation so you learn as you go!</p>
+
+      <div class="name-input-area">
+        <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="20"
+               onkeydown="if(event.key==='Enter') startGame()">
+        <button class="btn btn-success" onclick="startGame()">Let's Go!</button>
+        <div class="saved-names" id="savedNames"></div>
+      </div>
+
+      <button class="btn btn-gold" onclick="showLeaderboard()"> Leaderboard</button>
+      <button class="btn btn-primary" onclick="showProgress()" style="margin-top:8px;"> Progress Report</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Screen -->
+  <div class="screen" id="leaderboardScreen">
+    <h2> Leaderboard</h2>
+    <div id="leaderboardContent"><p style="color:#888;">No players yet.</p></div>
+    <div class="flex-center mt-20">
+      <button class="btn btn-secondary" onclick="clearAllData()">Reset All Data</button>
+      <button class="btn btn-primary" onclick="showStart()">Back</button>
+    </div>
+  </div>
+
+  <!-- History Screen -->
+  <div class="screen" id="historyScreen">
+    <h2 id="historyTitle">Game History</h2>
+    <div id="historyList"><p style="color:#888;">No games played yet.</p></div>
+    <div class="flex-center mt-20">
+      <button class="btn btn-secondary" onclick="clearPlayerHistory()">Clear My History</button>
+      <button class="btn btn-primary" onclick="showStart()">Back</button>
+    </div>
+  </div>
+
+  <!-- Progress Screen -->
+  <div class="screen" id="progressScreen">
+    <h2 id="progressTitle">Progress Report</h2>
+    <div id="progressContent" style="margin-bottom:15px;"></div>
+    <div id="progressRecent" style="margin-top:15px;"></div>
+    <div class="flex-center mt-20">
+      <button class="btn btn-secondary" onclick="clearPlayerHistory()">Clear My History</button>
+      <button class="btn btn-primary" onclick="showStart()">Back</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div class="screen" id="gameScreen">
+    <div style="display:flex; justify-content:space-between; color:#888; font-size:0.9em; margin-bottom:10px;">
+      <span id="playingAs"></span>
+      <span>Question <span id="qNum">1</span> of 5</span>
+    </div>
+    <div class="question-card" id="questionCard">
+      <div class="question-number" id="qBadge">1</div>
+      <div class="question-text" id="qText">Loading...</div>
+      <div id="qInput"></div>
+      <div class="explanation" id="explanation"></div>
+    </div>
+    <div class="flex-center">
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div class="screen" id="resultsScreen">
+    <div class="results-summary">
+      <div class="label" id="resultsPlayerLabel">Your Score</div>
+      <div class="big-score" id="finalScore">0/5</div>
+      <div class="message" id="resultMessage">Great job!</div>
+      <div id="resultEmoji" style="font-size:3em;">🌟</div>
+    </div>
+    <div class="results-detail" id="resultsDetail"></div>
+    <div class="flex-center">
+      <button class="btn btn-success" onclick="startGame()">Play Again</button>
+      <button class="btn btn-primary" onclick="showStart()">Menu</button>
+      <button class="btn btn-secondary" onclick="showMyHistory()">My History</button>
+      <button class="btn btn-primary" onclick="showProgress()">Progress</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ----- Question Bank (UK KS2/KS3 level) -----
+const questions = [
+  // Multiple choice
+  { topic:'addition', type:'mcq', question:'What is 245 + 378?', options:['523','613','623','723'], answer:2,
+    explanation:'Answer = 623.<br><b>Method 1 — Partitioning:</b> 200+300=500, 40+70=110, 5+8=13. 500+110+13 = 623.<br><b>Method 2 — Column addition:</b> Line them up and add each column: 245+378 = 623.' },
+  { topic:'subtraction', type:'mcq', question:'What is 504 − 237?', options:['267','277','367','233'], answer:0,
+    explanation:'Answer = 267.<br><b>Method 1 — Splitting:</b> 504−200=304, 304−30=274, 274−7=267.<br><b>Method 2 — Column subtraction:</b> 504−237. Borrow from the tens: 4 becomes 14, 14−7=7. 0 becomes 9, 9−3=6. 4 becomes 3, 3−2=1. = 267.' },
+  { topic:'multiplication', type:'mcq', question:'What is 12 × 8?', options:['86','96','106','84'], answer:1,
+    explanation:'Answer = 96.<br><b>Method 1 — Split 12:</b> 10×8=80, 2×8=16. 80+16=96.<br><b>Method 2 — Doubling:</b> 12×4=48, double it: 48×2=96.' },
+  { topic:'division', type:'mcq', question:'What is 144 ÷ 12?', options:['10','11','12','14'], answer:2,
+    explanation:'Answer = 12.<br><b>Method 1 — Times tables:</b> 12×12=144, so 144÷12=12.<br><b>Method 2 — Halving:</b> 144÷2=72, 72÷2=36, 36÷3=12.' },
+  { topic:'fractions', type:'mcq', question:'What is ¾ as a decimal?', options:['0.25','0.5','0.75','0.34'], answer:2,
+    explanation:'Answer = 0.75.<br><b>Method 1 — Division:</b> 3÷4=0.75.<br><b>Method 2 — Equivalent fraction:</b> ¾ = 75/100 = 0.75.' },
+  { topic:'percentages', type:'mcq', question:'What is 25% of 200?', options:['25','40','50','75'], answer:2,
+    explanation:'Answer = 50.<br><b>Method 1 — Fraction:</b> 25% = ¼, so 200÷4=50.<br><b>Method 2 — 10% method:</b> 10% of 200=20, 5% of 200=10. 20+20+10=50.' },
+  { topic:'fractions', type:'mcq', question:'A pizza has 8 slices. You eat 3. What fraction is left?', options:['⅜','⅝','¾','½'], answer:1,
+    explanation:'Answer = ⅝.<br><b>Working:</b> 8 slices total, 3 eaten, so 8−3=5 left. 5 out of 8 = ⅝.' },
+  { topic:'addition', type:'mcq', question:'What is 15 + 27?', options:['32','42','52','37'], answer:1,
+    explanation:'Answer = 42.<br><b>Method 1 — Partitioning:</b> 15+20=35, 35+7=42.<br><b>Method 2 — Rounding:</b> 15+30=45, minus 3 = 42.' },
+  { topic:'multiplication', type:'mcq', question:'What is 7 × 9?', options:['56','63','72','49'], answer:1,
+    explanation:'Answer = 63.<br><b>Method 1 — 10× then subtract:</b> 7×10=70, minus 7 = 63.<br><b>Method 2 — 3× then double:</b> 7×3=21, 21×3=63.' },
+  { topic:'area', type:'mcq', question:'A rectangle is 8cm by 5cm. What is its area?', options:['13 cm²','26 cm²','40 cm²','45 cm²'], answer:2,
+    explanation:'Answer = 40 cm².<br><b>Formula:</b> Area = length × width = 8 × 5 = 40 cm².<br><b>Counting squares:</b> 8 rows of 5 squares = 40.' },
+  { topic:'division', type:'mcq', question:'What is 56 ÷ 8?', options:['6','7','8','9'], answer:1,
+    explanation:'Answer = 7.<br><b>Times tables:</b> 8×7=56, so 56÷8=7.<br><b>Halving:</b> 56÷2=28, 28÷2=14, 14÷2=7.' },
+  { topic:'decimals', type:'mcq', question:'What is 1.5 + 2.3?', options:['3.5','3.8','4.8','2.8'], answer:1,
+    explanation:'Answer = 3.8.<br><b>Method 1 — Whole + decimal:</b> 1+2=3, 0.5+0.3=0.8. 3+0.8=3.8.<br><b>Method 2 — Column:</b> 1.5+2.3 = 3.8.' },
+  { topic:'subtraction', type:'mcq', question:'What is 1000 − 456?', options:['544','554','444','556'], answer:0,
+    explanation:'Answer = 544.<br><b>Method 1 — Splitting:</b> 1000−400=600, 600−50=550, 550−6=544.<br><b>Method 2 — Counting up:</b> 456 to 500 = 44, 500 to 1000 = 500. 44+500=544.' },
+  { topic:'multiplication', type:'mcq', question:'What is 11 × 11?', options:['111','121','101','131'], answer:1,
+    explanation:'Answer = 121.<br><b>Method 1 — Split 11:</b> 10×11=110, 1×11=11. 110+11=121.<br><b>Method 2 — Pattern:</b> 11×11 = 121 (the digits go 1, 1+1=2, 1).' },
+  // Fill in
+  { topic:'addition', type:'input', question:'What is 350 + 475?', answer:'825',
+    explanation:'Answer = 825.<br><b>Partitioning:</b> 300+400=700, 50+75=125, 700+125=825.<br><b>Column:</b> 350+475, add each column: 0+5=5, 5+7=12 (carry 1), 3+4+1=8. = 825.' },
+  { topic:'subtraction', type:'input', question:'What is 600 − 289?', answer:'311',
+    explanation:'Answer = 311.<br><b>Splitting:</b> 600−200=400, 400−80=320, 320−9=311.<br><b>Counting up:</b> 289 to 300 = 11, 300 to 600 = 300. 11+300=311.' },
+  { topic:'multiplication', type:'input', question:'What is 15 × 6?', answer:'90',
+    explanation:'Answer = 90.<br><b>Split 15:</b> 10×6=60, 5×6=30, 60+30=90.<br><b>Doubling:</b> 15×3=45, double it: 45×2=90.' },
+  { topic:'division', type:'input', question:'What is 81 ÷ 9?', answer:'9',
+    explanation:'Answer = 9.<br><b>Times tables:</b> 9×9=81, so 81÷9=9.<br><b>Repeated subtraction:</b> 81−9=72, 72−9=63... keep going 9 times to reach 0.' },
+  { topic:'decimals', type:'input', question:'What is ⅕ as a decimal?', answer:'0.2',
+    explanation:'Answer = 0.2.<br><b>Division:</b> 1÷5=0.2.<br><b>Equivalent:</b> ⅕ = 2/10 = 0.2.' },
+  { topic:'multiplication', type:'input', question:'A train travels 60 km in 1 hour. How far in 4 hours?', answer:'240',
+    explanation:'Answer = 240 km.<br><b>Multiplication:</b> 60 × 4 = 240.<br><b>Repeated addition:</b> 60+60+60+60=240.' },
+  { topic:'powers', type:'input', question:'What is 2³ (2 to the power of 3)?', answer:'8',
+    explanation:'Answer = 8.<br><b>Repeated multiplication:</b> 2×2×2=8.<br><b>Step by step:</b> 2×2=4, 4×2=8.' },
+  { topic:'decimals', type:'input', question:'What is 0.6 × 10?', answer:'6',
+    explanation:'Answer = 6.<br><b>Decimal shift:</b> ×10 moves the decimal one place right: 0.6→6.<br><b>Fraction:</b> 0.6 = 6/10, 6/10×10 = 6.' },
+  { topic:'percentages', type:'input', question:'What is 30% of 150?', answer:'45',
+    explanation:'Answer = 45.<br><b>10% method:</b> 10% of 150=15, 30%=15×3=45.<br><b>Fraction:</b> 30%=3/10, 150÷10=15, 15×3=45.' },
+  { topic:'time', type:'input', question:'How many minutes in 2½ hours?', answer:'150',
+    explanation:'Answer = 150 minutes.<br><b>Convert hours:</b> 2 hours = 120 minutes, ½ hour = 30 minutes. 120+30=150.<br><b>Multiplication:</b> 2.5×60=150.' },
+  { topic:'addition', type:'input', question:'What is 99 + 99?', answer:'198',
+    explanation:'Answer = 198.<br><b>Rounding:</b> 100+100=200, minus 2 = 198.<br><b>Doubling:</b> 99×2=198.' },
+  { topic:'fractions', type:'input', question:'What is ¼ of 100?', answer:'25',
+    explanation:'Answer = 25.<br><b>Division:</b> 100÷4=25.<br><b>Halving twice:</b> 100÷2=50, 50÷2=25.' },
+  { topic:'multiplication', type:'input', question:'What is 13 × 5?', answer:'65',
+    explanation:'Answer = 65.<br><b>Split 13:</b> 10×5=50, 3×5=15, 50+15=65.<br><b>Doubling:</b> 13×10=130, half of 130=65.' },
+  { topic:'decimals', type:'input', question:'What is 0.8 + 0.7?', answer:'1.5',
+    explanation:'Answer = 1.5.<br><b>Tenths:</b> 8 tenths + 7 tenths = 15 tenths = 1.5.<br><b>Column:</b> 0.8+0.7 = 1.5.' },
+  { topic:'division', type:'input', question:'What is 72 ÷ 8?', answer:'9',
+    explanation:'Answer = 9.<br><b>Times tables:</b> 8×9=72, so 72÷8=9.<br><b>Halving:</b> 72÷2=36, 36÷2=18, 18÷2=9.' }
+];
+
+// ----- State -----
+let currentPlayer = '';
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let results = [];
+let answered = false;
+
+// ----- Local Storage -----
+function getAllData() {
+  const d = localStorage.getItem('mathsGameData');
+  return d ? JSON.parse(d) : { players: {}, lastPlayer: '' };
+}
+
+function saveAllData(data) {
+  localStorage.setItem('mathsGameData', JSON.stringify(data));
+}
+
+function getPlayer(name) {
+  const data = getAllData();
+  if (!data.players[name]) {
+    data.players[name] = { totalCorrect: 0, totalGames: 0, bestScore: 0, history: [] };
+    saveAllData(data);
+  }
+  return data.players[name];
+}
+
+function savePlayer(name, stats) {
+  const data = getAllData();
+  data.players[name] = stats;
+  data.lastPlayer = name;
+  saveAllData(data);
+}
+
+function getSavedNames() {
+  const data = getAllData();
+  return Object.keys(data.players).sort();
+}
+
+// ----- UI Updates -----
+function updateScoreboard() {
+  if (!currentPlayer) {
+    document.getElementById('sbPlayer').style.display = 'none';
+    return;
+  }
+  const s = getPlayer(currentPlayer);
+  document.getElementById('sbPlayer').style.display = 'inline';
+  document.getElementById('currentPlayerDisplay').textContent = currentPlayer;
+  document.getElementById('totalCorrect').textContent = s.totalCorrect;
+  document.getElementById('totalGames').textContent = s.totalGames;
+  document.getElementById('bestScore').textContent = s.bestScore + '/5';
+}
+
+function populateSavedNames() {
+  const names = getSavedNames();
+  const container = document.getElementById('savedNames');
+  container.innerHTML = '';
+  names.forEach(n => {
+    const btn = document.createElement('button');
+    btn.textContent = n;
+    btn.onclick = () => {
+      document.getElementById('nameInput').value = n;
+      startGame();
+    };
+    container.appendChild(btn);
+  });
+}
+
+// ----- Screen Navigation -----
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showStart() {
+  populateSavedNames();
+  document.getElementById('sbPlayer').style.display = 'none';
+  showScreen('startScreen');
+}
+
+// ----- Leaderboard -----
+function showLeaderboard() {
+  const data = getAllData();
+  const container = document.getElementById('leaderboardContent');
+  const names = Object.keys(data.players);
+  if (names.length === 0) {
+    container.innerHTML = '<p style="color:#888;">No players yet. Play a game first!</p>';
+    showScreen('leaderboardScreen');
+    return;
+  }
+
+  const sorted = names.map(n => ({ name: n, ...data.players[n] }))
+    .sort((a, b) => b.bestScore - a.bestScore || b.totalCorrect - a.totalCorrect);
+
+  let html = '<table class="leaderboard-table"><tr><th>Rank</th><th>Name</th><th>Games</th><th>Best</th><th>Total Correct</th><th>Avg</th></tr>';
+  sorted.forEach((p, i) => {
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+    const isCurrent = p.name === currentPlayer;
+    const avg = p.totalGames > 0 ? Math.round(p.totalCorrect / p.totalGames * 100 / 20) * 20 / 100 : 0;
+    html += `<tr class="${isCurrent ? 'current-player' : ''}">
+      <td><span class="rank-badge ${rankClass}">${rankClass ? i+1 : i+1}</span></td>
+      <td>${p.name}${isCurrent ? ' ⭐' : ''}</td>
+      <td>${p.totalGames}</td>
+      <td>${p.bestScore}/5</td>
+      <td>${p.totalCorrect}</td>
+      <td>${avg.toFixed(1)}</td>
+    </tr>`;
+  });
+  html += '</table>';
+  container.innerHTML = html;
+  showScreen('leaderboardScreen');
+}
+
+function clearAllData() {
+  if (!confirm('Reset ALL player data? This cannot be undone.')) return;
+  saveAllData({ players: {}, lastPlayer: '' });
+  showStart();
+}
+
+// ----- Per-Player History -----
+function showMyHistory() {
+  if (!currentPlayer) return;
+  const s = getPlayer(currentPlayer);
+  document.getElementById('historyTitle').textContent = currentPlayer + "'s History";
+  const container = document.getElementById('historyList');
+  if (s.history.length === 0) {
+    container.innerHTML = '<p style="color:#888;">No games played yet.</p>';
+  } else {
+    let html = '<table class="history-table"><tr><th>#</th><th>Score</th><th>Date</th><th>%</th></tr>';
+    s.history.slice().reverse().forEach((h, i) => {
+      html += `<tr><td>${s.history.length - i}</td><td>${h.score}/5</td><td>${h.date}</td><td>${Math.round(h.score/5*100)}%</td></tr>`;
+    });
+    html += '</table>';
+    container.innerHTML = html;
+  }
+  showScreen('historyScreen');
+}
+
+function clearPlayerHistory() {
+  if (!currentPlayer) return;
+  if (!confirm('Clear ' + currentPlayer + "'s history?")) return;
+  const s = getPlayer(currentPlayer);
+  s.totalCorrect = 0;
+  s.totalGames = 0;
+  s.bestScore = 0;
+  s.history = [];
+  savePlayer(currentPlayer, s);
+  updateScoreboard();
+  showMyHistory();
+}
+
+// ----- Progress Report -----
+function getTopicStats(playerStats) {
+  const counts = {};
+  const topicOrder = ['addition','subtraction','multiplication','division','fractions','decimals','percentages','area','powers','time'];
+  topicOrder.forEach(t => counts[t] = { correct: 0, total: 0 });
+  playerStats.history.forEach(h => {
+    if (h.details) {
+      h.details.forEach(d => {
+        if (counts[d.topic]) {
+          counts[d.topic].total++;
+          if (d.correct) counts[d.topic].correct++;
+        }
+      });
+    }
+  });
+  return counts;
+}
+
+function showProgress() {
+  if (!currentPlayer) { showStart(); return; }
+  const s = getPlayer(currentPlayer);
+  document.getElementById('progressTitle').textContent = currentPlayer + "'s Progress Report";
+  const content = document.getElementById('progressContent');
+  const recent = document.getElementById('progressRecent');
+
+  const topicStats = getTopicStats(s);
+
+  let topicHtml = '<h3 style="margin-bottom:4px;"> Topics</h3>';
+  topicHtml += '<div class="topic-grid">';
+  let anyData = false;
+  Object.entries(topicStats).forEach(([topic, st]) => {
+    if (st.total === 0) return;
+    anyData = true;
+    const pct = Math.round(st.correct / st.total * 100);
+    const cls = pct >= 80 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+    topicHtml += `<div class="topic-row">
+      <span class="topic-label">${topic}</span>
+      <div class="topic-bar-bg"><div class="topic-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <span class="topic-pct">${pct}%</span>
+      <span class="topic-count">${st.correct}/${st.total}</span>
+    </div>`;
+  });
+  topicHtml += '</div>';
+  content.innerHTML = anyData ? topicHtml : '<p style="color:#888;">Play some games first to see your progress by topic!</p>';
+
+  // Recent games with expandable detail
+  let recentHtml = '<h3 style="margin-bottom:8px;"> Recent Games</h3>';
+  if (s.history.length === 0) {
+    recentHtml += '<p style="color:#888;">No games yet.</p>';
+  } else {
+    recentHtml += '<table class="history-table" style="margin-top:0;"><tr><th>#</th><th>Score</th><th>Date</th><th></th></tr>';
+    s.history.slice().reverse().slice(0, 10).forEach((h, i) => {
+      const idx = s.history.length - i;
+      recentHtml += `<tr>
+        <td>${idx}</td>
+        <td>${h.score}/5</td>
+        <td>${h.date}</td>
+        <td><button class="game-detail-toggle" onclick="toggleGameDetail(${idx - 1})">Details</button></td>
+      </tr>`;
+      if (h.details) {
+        recentHtml += `<tr id="detail_${idx - 1}" style="display:none;">`;
+        recentHtml += `<td colspan="4"><div style="padding:4px 0;">`;
+        h.details.forEach((d, qi) => {
+          const cls = d.correct ? 'correct' : 'wrong';
+          recentHtml += `<div class="detail-q ${cls}">Q${qi+1}: ${d.question} — ${d.correct ? '✔' : '✘'}</div>`;
+        });
+        recentHtml += `</div></td></tr>`;
+      }
+    });
+    recentHtml += '</table>';
+  }
+  recent.innerHTML = recentHtml;
+  showScreen('progressScreen');
+}
+
+function toggleGameDetail(idx) {
+  const row = document.getElementById('detail_' + idx);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+// ----- Game Logic -----
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startGame() {
+  const input = document.getElementById('nameInput');
+  const name = input.value.trim();
+  if (!name) { input.focus(); input.style.borderColor = '#fc8181'; return; }
+  input.style.borderColor = '#e0e0e0';
+  currentPlayer = name;
+
+  // ensure player record exists
+  getPlayer(currentPlayer);
+
+  currentQuestions = shuffle([...questions]).slice(0, 5);
+  currentIndex = 0;
+  score = 0;
+  results = [];
+  answered = false;
+  updateScoreboard();
+  document.getElementById('playingAs').textContent = 'Player: ' + currentPlayer;
+  showScreen('gameScreen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentIndex];
+  document.getElementById('qNum').textContent = currentIndex + 1;
+  document.getElementById('qBadge').textContent = currentIndex + 1;
+  document.getElementById('qText').textContent = q.question;
+  document.getElementById('explanation').classList.remove('show');
+  document.getElementById('explanation').textContent = '';
+  document.getElementById('nextBtn').style.display = 'none';
+  answered = false;
+
+  const container = document.getElementById('qInput');
+  container.innerHTML = '';
+
+  if (q.type === 'mcq') {
+    const div = document.createElement('div');
+    div.className = 'options';
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => selectOption(idx, q);
+      div.appendChild(btn);
+    });
+    container.appendChild(div);
+  } else {
+    const div = document.createElement('div');
+    div.className = 'input-area';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.id = 'inputAnswer';
+    inp.placeholder = 'Type your answer...';
+    inp.onkeydown = (e) => { if (e.key === 'Enter') submitInput(q); };
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.textContent = 'Submit';
+    btn.onclick = () => submitInput(q);
+    div.appendChild(inp);
+    div.appendChild(btn);
+    container.appendChild(div);
+    setTimeout(() => inp.focus(), 100);
+  }
+}
+
+function selectOption(idx, q) {
+  if (answered) return;
+  answered = true;
+  const correct = idx === q.answer;
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.answer) b.classList.add('correct');
+    if (i === idx && !correct) b.classList.add('wrong');
+  });
+  handleAnswer(correct, q);
+}
+
+function submitInput(q) {
+  if (answered) return;
+  const input = document.getElementById('inputAnswer');
+  const val = input.value.trim();
+  if (!val) return;
+  answered = true;
+  const correct = val === q.answer;
+  input.disabled = true;
+  input.classList.add(correct ? 'correct' : 'wrong');
+  document.querySelector('#qInput .btn').disabled = true;
+  handleAnswer(correct, q);
+}
+
+function handleAnswer(correct, q) {
+  if (correct) score++;
+  results.push({ question: q.question, topic: q.topic, correct, userAnswer: '' });
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('nextBtn').textContent = currentIndex < 4 ? 'Next →' : 'See Results';
+
+  if (!correct) {
+    const expl = document.getElementById('explanation');
+    expl.innerHTML = q.explanation;
+    expl.classList.add('show');
+  } else {
+    document.getElementById('explanation').classList.remove('show');
+  }
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= 5) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  const s = getPlayer(currentPlayer);
+  s.totalCorrect += score;
+  s.totalGames += 1;
+  if (score > s.bestScore) s.bestScore = score;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const details = results.map((r, i) => ({ question: r.question, topic: currentQuestions[i].topic, correct: r.correct }));
+  s.history.push({ score, date: dateStr, details });
+  savePlayer(currentPlayer, s);
+  updateScoreboard();
+
+  document.getElementById('finalScore').textContent = score + '/5';
+  document.getElementById('resultsPlayerLabel').textContent = currentPlayer + "'s Score";
+
+  let msg, emoji;
+  if (score === 5) { msg = 'Perfect score! You crushed it!'; emoji = '🏆'; }
+  else if (score >= 4) { msg = 'Awesome work! Almost perfect!'; emoji = '🌟'; }
+  else if (score >= 3) { msg = 'Good effort! Keep practising!'; emoji = '👍'; }
+  else { msg = 'Keep trying — you will get better!'; emoji = '💪'; }
+  document.getElementById('resultMessage').textContent = msg;
+  document.getElementById('resultEmoji').textContent = emoji;
+
+  const detail = document.getElementById('resultsDetail');
+  detail.innerHTML = '';
+  currentQuestions.forEach((q, i) => {
+    const r = results[i];
+    const div = document.createElement('div');
+    div.className = 'result-item ' + (r.correct ? 'r-correct' : 'r-wrong');
+    div.innerHTML = `<div class="q">Q${i+1}: ${q.question}</div><div class="a">${r.correct ? '✔ Correct' : '✘ Wrong — ' + q.explanation}</div>`;
+    detail.appendChild(div);
+  });
+
+  showScreen('resultsScreen');
+}
+
+// ----- Init -----
+populateSavedNames();
+const data = getAllData();
+if (data.lastPlayer) {
+  document.getElementById('nameInput').value = data.lastPlayer;
+}
+</script>
+
+</body>
+</html>
