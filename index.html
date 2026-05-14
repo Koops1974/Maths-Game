@@ -607,7 +607,9 @@ function populateSavedNames() {
     btn.textContent = n;
     btn.onclick = () => {
       document.getElementById('nameInput').value = n;
-      startGame();
+      currentPlayer = n;
+      getPlayer(currentPlayer);
+      updateScoreboard();
     };
     container.appendChild(btn);
   });
@@ -621,7 +623,11 @@ function showScreen(id) {
 
 function showStart() {
   populateSavedNames();
-  document.getElementById('sbPlayer').style.display = 'none';
+  if (currentPlayer) {
+    updateScoreboard();
+  } else {
+    document.getElementById('sbPlayer').style.display = 'none';
+  }
   showScreen('startScreen');
 }
 
